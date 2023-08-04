@@ -1,0 +1,10 @@
+mutation InsertPost($title: String, $body: String) {
+    insert_post(objects: {title: $title, body: $body}) {
+        affected_rows
+        returning {
+            id
+            title
+            body
+        }
+    }
+}

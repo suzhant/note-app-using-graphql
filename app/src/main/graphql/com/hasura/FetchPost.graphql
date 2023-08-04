@@ -1,0 +1,7 @@
+query FetchPost {
+    post {
+        id
+        body
+        title
+    }
+}
