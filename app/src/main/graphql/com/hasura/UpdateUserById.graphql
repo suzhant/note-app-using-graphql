@@ -1,0 +1,8 @@
+mutation UpdateUserById($uuid: String!, $_set: user_set_input!) {
+    update_user_by_pk(pk_columns: {uuid: $uuid}, _set: $_set) {
+        email
+        profile_pic
+        user_name
+        uuid
+    }
+}

@@ -1,0 +1,9 @@
+mutation UpdateNote($pk_columns: note_pk_columns_input!, $_set: note_set_input) {
+    update_note_by_pk(pk_columns: $pk_columns, _set: $_set) {
+        body
+        id
+        timestamp
+        title
+        uuid
+    }
+}

@@ -1,2 +1,2 @@
-schema: schema1.graphqls
+schema: schema2.graphqls
 documents: '**/*.graphql'

@@ -1,0 +1,8 @@
+mutation CreateUser($object: user_insert_input!) {
+    insert_user_one(object: $object) {
+        email
+        profile_pic
+        user_name
+        uuid
+    }
+}

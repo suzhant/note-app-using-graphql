@@ -1,7 +1,0 @@
-mutation ChangePost($id: post_pk_columns_input!,$input: post_set_input!) {
-    update_post_by_pk(_set: $input,pk_columns: $id) {
-        body
-        id
-        title
-    }
-}

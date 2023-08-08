@@ -1,0 +1,18 @@
+#query FetchNote {
+#    note {
+#        body
+#        id
+#        timestamp
+#        title
+#    }
+#}
+
+query FetchNote($uuid: String_comparison_exp!) {
+    note(order_by: {timestamp: desc}, where: {uuid: $uuid}) {
+        body
+        id
+        timestamp
+        title
+        uuid
+    }
+}

@@ -2,6 +2,7 @@ package com.example.tweetapp.ui.fragments
 
 import android.app.Dialog
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,23 +11,37 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.apollographql.apollo3.api.Optional
 import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentDetailBinding
+import com.example.tweetapp.model.Action
+import com.example.tweetapp.model.Post
+import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.hasura.type.Post_pk_columns_input
-import com.hasura.type.Post_set_input
+import com.google.firebase.auth.FirebaseAuth
+import com.hasura.type.Note_pk_columns_input
+import com.hasura.type.Note_set_input
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 
 class DetailFragment : Fragment() {
@@ -37,8 +52,8 @@ class DetailFragment : Fragment() {
     private val viewModel : PostViewModel by activityViewModels()
     private val detailArgs: DetailFragmentArgs by navArgs()
     private lateinit var textWatcher : TextWatcher
-    private lateinit var progressbar: Dialog
     private var isUpdated = true
+    private lateinit var auth : FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,6 +65,7 @@ class DetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        auth = FirebaseAuth.getInstance()
         initView()
         initListeners()
     }
@@ -112,7 +128,6 @@ class DetailFragment : Fragment() {
         }
     }
     private fun initView() {
-        progressbar = ProgressHelper.buildProgressDialog(requireContext())
         binding.postTitleTextView.setText(detailArgs.post.title)
         binding.postBodyTextView.setText(detailArgs.post.body)
         hideMenuItems()
@@ -124,19 +139,17 @@ class DetailFragment : Fragment() {
         if (isSoftKeyboardVisible()){
             hideKeyboard()
         }
-        val id = Post_pk_columns_input(detailArgs.post.id)
-        val input = Post_set_input(title = Optional.present(title), body = Optional.present(body))
-        progressbar.show()
-        lifecycleScope.launch(Dispatchers.IO) {
-            viewModel.updatePost(id,input)
-            withContext(Dispatchers.Main){
-                isUpdated = true
-                hideMenuItems()
-                Snackbar.make(binding.root,"Updated",Snackbar.LENGTH_SHORT).setAction("Dismiss"){
-
-                }.show()
-                progressbar.dismiss()
+        val time = Date().time
+        val note = Post(id = detailArgs.post.id,body = body, title = title, timestamp = time, uuid = auth.uid.toString())
+        viewModel.upsertNote(note).also {
+            isUpdated = true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                scheduleRemoteSyncWorker(Action.EDIT.name)
             }
+            hideMenuItems()
+            Snackbar.make(binding.root,"Updated",Snackbar.LENGTH_SHORT).setAction("Dismiss"){
+
+            }.show()
         }
     }
 
@@ -160,5 +173,29 @@ class DetailFragment : Fragment() {
         val inputMethodManager =
             context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(view?.windowToken, 0)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun scheduleRemoteSyncWorker(action : String) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncDataRequest = OneTimeWorkRequestBuilder<RemoteSyncWorker>()
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                5000L,
+                TimeUnit.MILLISECONDS
+            ).addTag("remoteData")
+            .setConstraints(constraints)
+            .setInputData(inputData = workDataOf(RemoteSyncWorker.ACTION to action))
+            .build()
+
+        WorkManager.getInstance(requireContext())
+            .enqueueUniqueWork(
+                syncDataRequest.stringId,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                syncDataRequest
+            )
     }
 }

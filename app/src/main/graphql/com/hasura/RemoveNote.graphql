@@ -1,0 +1,9 @@
+mutation RemoveNote($id: String!) {
+    delete_note_by_pk(id: $id) {
+        body
+        id
+        timestamp
+        title
+        uuid
+    }
+}

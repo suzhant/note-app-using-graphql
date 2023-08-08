@@ -1,24 +1,18 @@
 package com.example.tweetapp.adapter
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.fragment.FragmentNavigatorExtras
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.tweetapp.R
 import com.example.tweetapp.databinding.PostItemLayoutBinding
 import com.example.tweetapp.model.Post
-import com.example.tweetapp.ui.fragments.MainFragmentDirections
-import com.hasura.FetchPostQuery
 
 class PostAdapter(
-    private val onPopUpMenuClicked: (FetchPostQuery.Post, Context, View) -> Unit,
-    private val onClick: (FetchPostQuery.Post) -> Unit,
+    private val onPopUpMenuClicked: (Post, Context, View) -> Unit,
+    private val onClick: (Post) -> Unit,
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private lateinit var context: Context
@@ -53,12 +47,12 @@ class PostAdapter(
         return differ.currentList.size
     }
 
-    private val differCallback = object : DiffUtil.ItemCallback<FetchPostQuery.Post>(){
-        override fun areItemsTheSame(oldItem: FetchPostQuery.Post, newItem: FetchPostQuery.Post): Boolean {
+    private val differCallback = object : DiffUtil.ItemCallback<Post>(){
+        override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean {
             return  oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: FetchPostQuery.Post, newItem: FetchPostQuery.Post): Boolean {
+        override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean {
             return oldItem == newItem
         }
 

@@ -1,0 +1,10 @@
+mutation CreateNoteById($object: note_insert_input!, $on_conflict: note_on_conflict) {
+    insert_note_one(object: $object, on_conflict: $on_conflict) {
+        body
+        id
+        timestamp
+        title
+        uuid
+    }
+}
+

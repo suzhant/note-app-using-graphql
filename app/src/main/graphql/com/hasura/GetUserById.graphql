@@ -1,0 +1,8 @@
+query GetUserById($uuid: String!) {
+    user_by_pk(uuid: $uuid) {
+        email
+        profile_pic
+        user_name
+        uuid
+    }
+}

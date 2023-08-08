@@ -1,0 +1,8 @@
+query GetAllUsers {
+    user {
+        email
+        profile_pic
+        user_name
+        uuid
+    }
+}

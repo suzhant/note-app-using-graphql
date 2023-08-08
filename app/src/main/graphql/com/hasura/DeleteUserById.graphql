@@ -1,0 +1,8 @@
+mutation DeleteUserById($uuid: String!) {
+    delete_user_by_pk(uuid: $uuid) {
+        email
+        profile_pic
+        user_name
+        uuid
+    }
+}

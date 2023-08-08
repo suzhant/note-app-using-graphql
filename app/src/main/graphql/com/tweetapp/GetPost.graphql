@@ -1,7 +1,0 @@
-query GetPost($input : ID!){
-    post(id: $input) {
-        id
-        title
-        body
-    }
-}
