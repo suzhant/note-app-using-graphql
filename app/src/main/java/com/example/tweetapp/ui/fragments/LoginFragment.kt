@@ -115,6 +115,7 @@ class LoginFragment : Fragment() {
         auth?.signInWithEmailAndPassword(email, password)
             ?.addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
+                    userViewModel.setLogin(true)
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth?.currentUser

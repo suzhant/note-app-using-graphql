@@ -34,7 +34,6 @@ import com.example.tweetapp.viewmodel.PostViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.hasura.FetchNoteQuery
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -66,6 +65,9 @@ class MainFragment : Fragment(){
     private fun initView() {
        lifecycleScope.launch {
            viewModel.getNotesByUserId(auth.uid.toString()).collectLatest{posts ->
+               if (posts.isNotEmpty()){
+                   binding.progressCircular.visibility = View.GONE
+               }
                adapter.differ.submitList(posts.sortedByDescending { it.timestamp})
                val key = booleanPreferencesKey(auth.uid.toString())
                SettingPref(requireContext(),key).setUserFirstTime(false)
