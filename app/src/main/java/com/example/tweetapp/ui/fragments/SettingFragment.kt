@@ -41,6 +41,7 @@ class SettingFragment : Fragment() {
         binding.logout.setOnClickListener{
             auth.signOut()
             if (auth.currentUser == null){
+                userViewModel.setLogin(false)
                 findNavController().navigate(R.id.action_settingFragment_to_loginFragment)
             }
         }

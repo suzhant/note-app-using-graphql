@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,8 +30,8 @@ class PostViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
 ) : ViewModel() {
 
-    private val _post = MutableLiveData<ApiState<List<FetchNoteQuery.Note>>>()
-    val post : LiveData<ApiState<List<FetchNoteQuery.Note>>> = _post
+    private val _post = MutableStateFlow<ApiState<List<FetchNoteQuery.Note>>>(ApiState.Loading(true))
+    val post : StateFlow<ApiState<List<FetchNoteQuery.Note>>> = _post.asStateFlow()
 
     private val _selectedPost = MutableLiveData<PostType>()
     val selectedPost : LiveData<PostType>  = _selectedPost
@@ -51,15 +50,15 @@ class PostViewModel @Inject constructor(
     fun getPost(userId: String){
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                _post.postValue(ApiState.Loading(true))
+                _post.value = (ApiState.Loading(true))
                 val response = remoteRepository.fetchPost(userId)
                 if (!response.hasErrors()){
-                    _post.postValue(ApiState.Success(response.data!!.note))
+                    _post.value = (ApiState.Success(response.data!!.note))
                 }else{
-                    _post.postValue(ApiState.Error(response.errors.toString()))
+                    _post.value = (ApiState.Error(response.errors.toString()))
                 }
             }catch (e: ApolloException){
-                _post.postValue(ApiState.Error(e.message.toString()))
+                _post.value = (ApiState.Error(e.message.toString()))
             }
         }
     }

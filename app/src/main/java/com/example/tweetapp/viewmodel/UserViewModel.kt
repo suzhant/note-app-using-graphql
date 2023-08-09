@@ -34,7 +34,7 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _userData = MutableLiveData<ApiState<GetUserByIdQuery.User_by_pk>>()
     val userData : LiveData<ApiState<GetUserByIdQuery.User_by_pk>> = _userData
 
-    private val _login = MutableLiveData<Boolean>(false)
+    private val _login = MutableLiveData(false)
     val login : LiveData<Boolean> = _login
 
     fun setLogin(enable : Boolean){

@@ -9,21 +9,24 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.lifecycle.lifecycleScope
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.databinding.ActivityMainBinding
-import com.example.tweetapp.service.RoomSyncWorker
 import com.example.tweetapp.service.RemoteSyncWorker
+import com.example.tweetapp.service.RoomSyncWorker
+import com.example.tweetapp.utils.SettingPref
 import com.example.tweetapp.viewmodel.PostViewModel
+import com.example.tweetapp.viewmodel.UserViewModel
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.Duration
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
@@ -34,18 +37,30 @@ class MainActivity : AppCompatActivity() {
         ActivityMainBinding.inflate(layoutInflater)
     }
     private val viewModel : PostViewModel by viewModels()
+    private val userViewModel : UserViewModel by viewModels()
+    private var isFirstTime = true
+    private lateinit var auth : FirebaseAuth
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        auth = FirebaseAuth.getInstance()
         monitorConnectivity()
-        scheduleDataSyncWorker()
+        userViewModel.login.observe(this){isLoggedIn ->
+            lifecycleScope.launch {
+                if (isLoggedIn){
+                    scheduleDataSyncWorker()
+                }
+            }
+
+        }
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun scheduleDataSyncWorker() {
+    private suspend fun scheduleDataSyncWorker() {
+        Log.d("remoteWorker","sync")
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
@@ -67,10 +82,18 @@ class MainActivity : AppCompatActivity() {
             .setConstraints(constraints)
             .build()
 
-        WorkManager.getInstance(applicationContext)
-            .beginWith(syncRoomRequest).then(syncRemoteRequest).enqueue()
-    }
 
+        val key = booleanPreferencesKey(auth.uid.toString())
+        isFirstTime = SettingPref(this@MainActivity,key).getUserFirstTime.first()
+
+        val firstTask = if (isFirstTime) syncRoomRequest else syncRemoteRequest
+        val secondTask = if (isFirstTime) syncRemoteRequest else syncRoomRequest
+
+        WorkManager.getInstance(applicationContext)
+            .beginWith(firstTask)
+            .then(secondTask).enqueue()
+
+    }
 
     private fun monitorConnectivity(){
         val networkRequest = NetworkRequest.Builder()

@@ -3,16 +3,15 @@ package com.example.tweetapp.ui.fragments
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,18 +26,16 @@ import com.example.tweetapp.R
 import com.example.tweetapp.adapter.PostAdapter
 import com.example.tweetapp.databinding.FragmentMainBinding
 import com.example.tweetapp.model.Action
-import com.example.tweetapp.model.ApiState
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.model.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
+import com.example.tweetapp.utils.SettingPref
 import com.example.tweetapp.viewmodel.PostViewModel
-import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.hasura.FetchNoteQuery
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -49,11 +46,8 @@ class MainFragment : Fragment(){
         FragmentMainBinding.inflate(layoutInflater)
     }
     private val viewModel : PostViewModel by activityViewModels()
-    private val userViewModel : UserViewModel by activityViewModels()
     private lateinit var adapter : PostAdapter
-    private var posts = mutableListOf<FetchNoteQuery.Note>()
     private lateinit var auth : FirebaseAuth
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,6 +67,8 @@ class MainFragment : Fragment(){
        lifecycleScope.launch {
            viewModel.getNotesByUserId(auth.uid.toString()).collectLatest{posts ->
                adapter.differ.submitList(posts.sortedByDescending { it.timestamp})
+               val key = booleanPreferencesKey(auth.uid.toString())
+               SettingPref(requireContext(),key).setUserFirstTime(false)
            }
        }
 
@@ -87,35 +83,6 @@ class MainFragment : Fragment(){
         binding.toolbar.menu.findItem(R.id.setting).setOnMenuItemClickListener {
              findNavController().navigate(R.id.action_mainFragment_to_settingFragment)
             false
-        }
-
-    }
-
-   private val postObserver = Observer<ApiState<List<FetchNoteQuery.Note>>>{response ->
-        when(response){
-            is ApiState.Success -> {
-                binding.progressCircular.visibility = View.GONE
-                posts = response.data as MutableList<FetchNoteQuery.Note>
-                val postEntities = posts.map {
-                    Post(
-                        id = it.id,
-                        title = it.title,
-                        body = it.body,
-                        timestamp = it.timestamp.toString().toLong(),
-                        uuid = it.uuid
-                    )
-                }
-                adapter.differ.submitList(postEntities.sortedByDescending { it.timestamp })
-            }
-
-            is ApiState.Error -> {
-                binding.progressCircular.visibility = View.GONE
-                Log.d("error", response.message)
-            }
-
-            is ApiState.Loading ->{
-                binding.progressCircular.visibility = View.VISIBLE
-            }
         }
     }
 

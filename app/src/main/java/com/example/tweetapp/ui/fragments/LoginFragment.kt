@@ -303,6 +303,7 @@ class LoginFragment : Fragment() {
             is ApiState.Success ->{
                 // Update was successful
                 loggedIn = true
+                userViewModel.setLogin(true)
                 if (progressDialog.isShowing){
                     progressDialog.dismiss()
                 }
@@ -328,6 +329,7 @@ class LoginFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         if (auth?.currentUser!=null){
+            userViewModel.setLogin(true)
             goToNextFragment()
         }
     }
