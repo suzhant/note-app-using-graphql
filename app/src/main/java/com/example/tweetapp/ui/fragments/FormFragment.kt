@@ -1,42 +1,36 @@
 package com.example.tweetapp.ui.fragments
 
-import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.PathInterpolator
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.apollographql.apollo3.api.Optional
 import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentFormBinding
 import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.model.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
-import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialContainerTransform
 import com.google.firebase.auth.FirebaseAuth
-import com.hasura.type.Note_pk_columns_input
-import com.hasura.type.Note_set_input
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -50,6 +44,26 @@ class FormFragment : Fragment() {
     private val viewModel : PostViewModel by activityViewModels()
     private lateinit var postType : PostType
     private lateinit var auth : FirebaseAuth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            fadeMode = MaterialContainerTransform.FADE_MODE_THROUGH
+            duration = 800
+            shapeMaskProgressThresholds = MaterialContainerTransform.ProgressThresholds(0.0f,0.5f)
+            interpolator = PathInterpolator(0.05f,0.7f,0.1f,1f)
+            scrimColor = Color.TRANSPARENT
+
+        }
+
+        sharedElementReturnTransition = MaterialContainerTransform().apply {
+            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
+            duration = 800
+            containerColor  = ContextCompat.getColor(requireContext(),R.color.primary)
+            setAllContainerColors(containerColor)
+            scrimColor = containerColor
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

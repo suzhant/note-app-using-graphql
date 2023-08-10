@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.doOnPreDraw
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.BackoffPolicy
@@ -31,6 +34,7 @@ import com.example.tweetapp.model.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.utils.SettingPref
 import com.example.tweetapp.viewmodel.PostViewModel
+import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -45,7 +49,8 @@ class MainFragment : Fragment(){
         FragmentMainBinding.inflate(layoutInflater)
     }
     private val viewModel : PostViewModel by activityViewModels()
-    private lateinit var adapter : PostAdapter
+    private val userViewModel : UserViewModel by activityViewModels()
+    private var adapter : PostAdapter ?= null
     private lateinit var auth : FirebaseAuth
 
     override fun onCreateView(
@@ -68,7 +73,7 @@ class MainFragment : Fragment(){
                if (posts.isNotEmpty()){
                    binding.progressCircular.visibility = View.GONE
                }
-               adapter.differ.submitList(posts.sortedByDescending { it.timestamp})
+               adapter?.differ?.submitList(posts.sortedByDescending { it.timestamp})
                val key = booleanPreferencesKey(auth.uid.toString())
                SettingPref(requireContext(),key).setUserFirstTime(false)
            }
@@ -79,13 +84,38 @@ class MainFragment : Fragment(){
             val post = Post("","","", timestamp = 0L, uuid = "")
             val postType = PostType(action,post)
             viewModel.setSelectedPost(postType)
-            findNavController().navigate(R.id.action_mainFragment_to_formFragment)
+            val arg = MainFragmentDirections.actionMainFragmentToDetailFragment(post)
+            val extras = FragmentNavigatorExtras(binding.fabAdd to "shared_element_container")
+            findNavController().navigate(arg,extras)
         }
 
         binding.toolbar.menu.findItem(R.id.setting).setOnMenuItemClickListener {
              findNavController().navigate(R.id.action_mainFragment_to_settingFragment)
             false
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                showLogoutDialog()
+            }
+        })
+    }
+
+    private fun showLogoutDialog() {
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+        dialog.setTitle("Do you want to logout?")
+        dialog.setPositiveButton("Yes"){_, _ ->
+            auth.signOut()
+            if (auth.currentUser==null){
+                userViewModel.setLogin(false)
+                findNavController().navigate(R.id.action_mainFragment_to_loginFragment)
+            }
+        }
+        dialog.setNegativeButton("No"){_, _ ->
+
+        }
+        dialog.show()
     }
 
     private fun initRecycler() {
@@ -99,7 +129,7 @@ class MainFragment : Fragment(){
                timestamp = post.timestamp,
                uuid = post.uuid
            ))
-        }, onClick = {post ->
+        }, onClick = {post,view ->
             val p = Post(
                 id = post.id,
                 title = post.title,
@@ -108,9 +138,17 @@ class MainFragment : Fragment(){
                 uuid = post.uuid
             )
             val action = MainFragmentDirections.actionMainFragmentToDetailFragment(p)
-            findNavController().navigate(action)
+            val extras = FragmentNavigatorExtras(view to post.id)
+            findNavController().navigate(action,extras)
         })
         binding.recyclerPost.adapter = adapter
+
+        postponeEnterTransition()
+        binding.recyclerPost.doOnPreDraw {
+            if (binding.recyclerPost.isLaidOut){
+                startPostponedEnterTransition()
+            }
+        }
     }
 
     private fun showMenu(context : Context, view: View, post: Post){

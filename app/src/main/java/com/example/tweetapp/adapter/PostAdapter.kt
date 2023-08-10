@@ -12,7 +12,7 @@ import com.example.tweetapp.model.Post
 
 class PostAdapter(
     private val onPopUpMenuClicked: (Post, Context, View) -> Unit,
-    private val onClick: (Post) -> Unit,
+    private val onClick: (Post,View) -> Unit,
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private lateinit var context: Context
@@ -37,8 +37,10 @@ class PostAdapter(
                     it
                 )
             }
+            card.transitionName = post.id
             card.setOnClickListener {
-                onClick(post)
+                it.transitionName = post.id
+                onClick(post,it)
             }
         }
     }

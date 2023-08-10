@@ -1,7 +1,7 @@
 package com.example.tweetapp.ui.fragments
 
-import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -9,12 +9,13 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.PathInterpolator
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.work.BackoffPolicy
@@ -24,23 +25,18 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.apollographql.apollo3.api.Optional
 import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentDetailBinding
 import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.service.RemoteSyncWorker
-import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialContainerTransform
 import com.google.firebase.auth.FirebaseAuth
-import com.hasura.type.Note_pk_columns_input
-import com.hasura.type.Note_set_input
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 
@@ -50,16 +46,42 @@ class DetailFragment : Fragment() {
         FragmentDetailBinding.inflate(layoutInflater)
     }
     private val viewModel : PostViewModel by activityViewModels()
-    private val detailArgs: DetailFragmentArgs by navArgs()
+    private val detailArgs: DetailFragmentArgs? by navArgs()
     private lateinit var textWatcher : TextWatcher
     private var isUpdated = true
     private lateinit var auth : FirebaseAuth
+    private var postId = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            fadeMode = MaterialContainerTransform.FADE_MODE_THROUGH
+            duration = 800
+            interpolator = PathInterpolator(0.05f,0.7f,0.1f,1f)
+            scrimColor = Color.TRANSPARENT
+        }
+
+        sharedElementReturnTransition = MaterialContainerTransform().apply {
+            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
+            duration = 1000
+            shapeMaskProgressThresholds = MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
+            scaleProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
+            fadeProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.1f,1.0f)
+            containerColor  = ContextCompat.getColor(requireContext(),R.color.white)
+            setAllContainerColors(containerColor)
+            scrimColor = Color.TRANSPARENT
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
+        postId = detailArgs?.post?.id.toString()
+        if (postId.isNotEmpty()){
+            binding.root.transitionName = detailArgs?.post?.id
+        }
         return binding.root
     }
 
@@ -128,19 +150,23 @@ class DetailFragment : Fragment() {
         }
     }
     private fun initView() {
-        binding.postTitleTextView.setText(detailArgs.post.title)
-        binding.postBodyTextView.setText(detailArgs.post.body)
+        binding.postTitleTextView.setText(detailArgs?.post?.title )
+        binding.postBodyTextView.setText(detailArgs?.post?.body)
         hideMenuItems()
     }
 
     private fun updatePost(){
         val title = binding.postTitleTextView.text.toString()
         val body = binding.postBodyTextView.text.toString()
+        val time = Date().time
+        if (postId.isEmpty()){
+            val uuid = UUID.randomUUID().toString()
+            postId = uuid
+        }
         if (isSoftKeyboardVisible()){
             hideKeyboard()
         }
-        val time = Date().time
-        val note = Post(id = detailArgs.post.id,body = body, title = title, timestamp = time, uuid = auth.uid.toString())
+        val note = Post(id = postId,body = body, title = title, timestamp = time, uuid = auth.uid.toString())
         viewModel.upsertNote(note).also {
             isUpdated = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

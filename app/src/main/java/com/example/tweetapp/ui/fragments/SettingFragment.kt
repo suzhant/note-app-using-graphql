@@ -51,7 +51,7 @@ class SettingFragment : Fragment() {
         }
 
         binding.toolbar.setNavigationOnClickListener {
-           requireActivity().onBackPressedDispatcher.onBackPressed()
+            findNavController().navigateUp()
         }
 
         userViewModel.userData.observe(viewLifecycleOwner){response ->
