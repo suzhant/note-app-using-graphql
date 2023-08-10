@@ -55,12 +55,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/edittext_no_underline"
+            android:hint="Body"
             android:padding="3dp"
             android:textSize="16sp"
             android:inputType="textMultiLine"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            tools:text="hello"
-            android:autofillHints="hello" />
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     </LinearLayout>
 
