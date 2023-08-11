@@ -18,9 +18,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.databinding.ActivityMainBinding
+import com.example.tweetapp.datastore.SettingPref
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.service.RoomSyncWorker
-import com.example.tweetapp.utils.SettingPref
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -54,7 +54,6 @@ class MainActivity : AppCompatActivity() {
                     scheduleDataSyncWorker()
                 }
             }
-
         }
     }
 

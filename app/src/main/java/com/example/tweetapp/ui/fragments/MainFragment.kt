@@ -28,11 +28,11 @@ import androidx.work.workDataOf
 import com.example.tweetapp.R
 import com.example.tweetapp.adapter.PostAdapter
 import com.example.tweetapp.databinding.FragmentMainBinding
+import com.example.tweetapp.datastore.SettingPref
 import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.model.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
-import com.example.tweetapp.utils.SettingPref
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

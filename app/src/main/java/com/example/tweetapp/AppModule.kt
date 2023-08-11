@@ -1,23 +1,30 @@
 package com.example.tweetapp
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.dataStoreFile
 import androidx.room.Room
-import androidx.room.migration.Migration
-import androidx.work.impl.Migration_11_12
-import androidx.work.impl.Migration_1_2
 import com.apollographql.apollo3.ApolloClient
+import com.codelab.android.datastore.UserPreferences
 import com.example.tweetapp.dao.PostDao
 import com.example.tweetapp.database.AppDatabase
+import com.example.tweetapp.datastore.UserPreferenceSerializer
+import com.example.tweetapp.repository.ProtoRepository
 import com.example.tweetapp.repository.RemoteRepository
 import com.example.tweetapp.repository.RemoteRepositoryImpl
 import com.example.tweetapp.repository.RoomRepository
 import com.example.tweetapp.repository.UserRepository
 import com.example.tweetapp.repository.UserRepositoryImpl
+import com.example.tweetapp.utils.Constants.DATA_STORE_FILE_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 @Module
@@ -66,4 +73,22 @@ object AppModule {
     fun provideUserRepository(apolloClient: ApolloClient) : UserRepository{
         return UserRepositoryImpl(apolloClient)
     }
+
+    @Singleton
+    @Provides
+    fun provideProtoDataStore(@ApplicationContext appContext: Context): DataStore<UserPreferences> {
+        return DataStoreFactory.create(
+            serializer = UserPreferenceSerializer,
+            produceFile = { appContext.dataStoreFile(DATA_STORE_FILE_NAME) },
+            corruptionHandler =null,
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideProtoRepository(protoDataStore: DataStore<UserPreferences>) : ProtoRepository{
+        return ProtoRepository(protoDataStore)
+    }
+
 }

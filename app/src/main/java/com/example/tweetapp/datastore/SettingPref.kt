@@ -1,4 +1,4 @@
-package com.example.tweetapp.utils
+package com.example.tweetapp.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -8,7 +8,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class SettingPref(private val context: Context,private val key : Preferences.Key<Boolean>){
+class SettingPref(private val context: Context, private val key : Preferences.Key<Boolean>){
 
     companion object{
         val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

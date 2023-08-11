@@ -56,14 +56,14 @@ class DetailFragment : Fragment() {
         super.onCreate(savedInstanceState)
         sharedElementEnterTransition = MaterialContainerTransform().apply {
             fadeMode = MaterialContainerTransform.FADE_MODE_THROUGH
-            duration = 800
+            duration = resources.getInteger(R.integer.motion_large).toLong()
             interpolator = PathInterpolator(0.05f,0.7f,0.1f,1f)
             scrimColor = Color.TRANSPARENT
         }
 
         sharedElementReturnTransition = MaterialContainerTransform().apply {
             fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
-            duration = 1000
+            duration = resources.getInteger(R.integer.motion_large).toLong()
             shapeMaskProgressThresholds = MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
             scaleProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
             fadeProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.1f,1.0f)

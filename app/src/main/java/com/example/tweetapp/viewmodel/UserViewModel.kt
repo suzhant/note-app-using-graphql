@@ -3,30 +3,27 @@ package com.example.tweetapp.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.tweetapp.model.ApiState
-import com.example.tweetapp.model.User
+import com.example.tweetapp.repository.ProtoRepository
 import com.example.tweetapp.repository.UserRepository
-import com.google.android.gms.common.api.Api
 import com.hasura.GetAllUsersQuery
 import com.hasura.GetUserByIdQuery
-import com.hasura.UpdateUserByIdMutation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class UserViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
+class UserViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val protoRepository: ProtoRepository,
+) : ViewModel() {
 
     private val _users = MutableLiveData<ApiState<List<GetAllUsersQuery.User>>>()
     val users : LiveData<ApiState<List<GetAllUsersQuery.User>>> = _users
@@ -36,6 +33,15 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
 
     private val _login = MutableLiveData(false)
     val login : LiveData<Boolean> = _login
+
+    val protoData = protoRepository.userPreferenceFLow.asLiveData()
+
+    fun updateUserPrefDataStore(isFirstTime : Boolean, userId : String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            protoRepository.updateValue(isFirstTime,userId)
+        }
+
+     fun getUserPrefById(userId: String) = protoRepository.getKeyByUserId(userId)
 
     fun setLogin(enable : Boolean){
         _login.value = enable
