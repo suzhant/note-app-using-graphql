@@ -2,17 +2,16 @@ package com.example.tweetapp.ui.fragments
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.Intent
+import android.app.PendingIntent
 import android.content.IntentSender
+import android.content.IntentSender.SendIntentException
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -27,11 +26,9 @@ import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.GetSignInIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.firebase.auth.FirebaseAuth
@@ -39,6 +36,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+
 
 class LoginFragment : Fragment() {
 
@@ -78,7 +76,7 @@ class LoginFragment : Fragment() {
 
 
         binding.btnGoogleLogin.setOnClickListener {
-            loginWithGoogle()
+            googleSignIn()
         }
 
         binding.btnLogin.setOnClickListener {
@@ -91,7 +89,73 @@ class LoginFragment : Fragment() {
 
     }
 
+    private fun googleSignIn() {
+        val request = GetSignInIntentRequest.builder()
+            .setServerClientId(getString(R.string.default_web_client_id))
+            .build()
+        Identity.getSignInClient(requireActivity())
+            .getSignInIntent(request)
+            .addOnSuccessListener { result: PendingIntent ->
+                try {
+                    val intentSenderRequest = IntentSenderRequest.Builder(result.intentSender).build()
+                    launcher.launch(intentSenderRequest)
+                } catch (e: SendIntentException) {
+                    Log.e(TAG, "Google Sign-in failed")
+                }
+            }
+            .addOnFailureListener { e: Exception? ->
+                Log.e(
+                    TAG,
+                    "Google Sign-in failed",
+                    e
+                )
+            }
+    }
 
+    private val launcher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            try {
+                val credential =
+                    Identity.getSignInClient(requireActivity())
+                        .getSignInCredentialFromIntent(result.data)
+                val idToken = credential.googleIdToken
+
+                if (!progressDialog.isShowing) {
+                    progressDialog.show()
+                }
+                val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                auth?.signInWithCredential(firebaseCredential)
+                    ?.addOnCompleteListener(requireActivity()) { task ->
+                        if (task.isSuccessful) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success")
+
+                            val user = auth?.currentUser
+                            val userData = user?.run {
+                                User(
+                                    uuid = uid,
+                                    username = displayName.toString(),
+                                    profilePic = photoUrl.toString(),
+                                    email = email.toString()
+                                )
+                            }
+
+                            if (userData != null) {
+                                checkIfKeyExists(key = auth?.uid!!, userData = userData)
+                            }
+
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.exception)
+                        }
+                    }
+            } catch (e: ApiException) {
+                // The ApiException status code indicates the detailed failure reason.
+            }
+        }
+    }
 
     private fun loginWithPassword() {
         val email = binding.etEmail.text.toString()
@@ -136,7 +200,7 @@ class LoginFragment : Fragment() {
             }
     }
 
-    private fun loginWithGoogle() {
+    private fun oneTapLoginWithGoogle() {
         oneTapClient = Identity.getSignInClient(requireActivity())
         signInRequest = BeginSignInRequest.builder()
             .setPasswordRequestOptions(BeginSignInRequest.PasswordRequestOptions.builder()
