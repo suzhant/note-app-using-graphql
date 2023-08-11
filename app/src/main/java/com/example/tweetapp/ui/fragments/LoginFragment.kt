@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -23,12 +22,10 @@ import com.example.tweetapp.databinding.FragmentLoginBinding
 import com.example.tweetapp.model.ApiState
 import com.example.tweetapp.model.User
 import com.example.tweetapp.utils.ProgressHelper
-import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.GetSignInIntentRequest
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.firebase.auth.FirebaseAuth
@@ -44,9 +41,7 @@ class LoginFragment : Fragment() {
         FragmentLoginBinding.inflate(layoutInflater)
     }
     private val userViewModel : UserViewModel by activityViewModels()
-    private val postViewModel : PostViewModel by activityViewModels()
     private val TAG = "google_sign"
-    private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
     private var showOneTapUI = true
     private var auth: FirebaseAuth? = null
@@ -98,7 +93,7 @@ class LoginFragment : Fragment() {
             .addOnSuccessListener { result: PendingIntent ->
                 try {
                     val intentSenderRequest = IntentSenderRequest.Builder(result.intentSender).build()
-                    launcher.launch(intentSenderRequest)
+                    googleIntentResultLauncher.launch(intentSenderRequest)
                 } catch (e: SendIntentException) {
                     Log.e(TAG, "Google Sign-in failed")
                 }
@@ -110,51 +105,6 @@ class LoginFragment : Fragment() {
                     e
                 )
             }
-    }
-
-    private val launcher = registerForActivityResult(
-        ActivityResultContracts.StartIntentSenderForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            try {
-                val credential =
-                    Identity.getSignInClient(requireActivity())
-                        .getSignInCredentialFromIntent(result.data)
-                val idToken = credential.googleIdToken
-
-                if (!progressDialog.isShowing) {
-                    progressDialog.show()
-                }
-                val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-                auth?.signInWithCredential(firebaseCredential)
-                    ?.addOnCompleteListener(requireActivity()) { task ->
-                        if (task.isSuccessful) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success")
-
-                            val user = auth?.currentUser
-                            val userData = user?.run {
-                                User(
-                                    uuid = uid,
-                                    username = displayName.toString(),
-                                    profilePic = photoUrl.toString(),
-                                    email = email.toString()
-                                )
-                            }
-
-                            if (userData != null) {
-                                checkIfKeyExists(key = auth?.uid!!, userData = userData)
-                            }
-
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.exception)
-                        }
-                    }
-            } catch (e: ApiException) {
-                // The ApiException status code indicates the detailed failure reason.
-            }
-        }
     }
 
     private fun loginWithPassword() {
@@ -201,7 +151,6 @@ class LoginFragment : Fragment() {
     }
 
     private fun oneTapLoginWithGoogle() {
-        oneTapClient = Identity.getSignInClient(requireActivity())
         signInRequest = BeginSignInRequest.builder()
             .setPasswordRequestOptions(BeginSignInRequest.PasswordRequestOptions.builder()
                 .setSupported(true)
@@ -223,7 +172,7 @@ class LoginFragment : Fragment() {
 
 
     private fun signInWithIntent(){
-        oneTapClient.beginSignIn(signInRequest)
+        Identity.getSignInClient(requireActivity()).beginSignIn(signInRequest)
             .addOnSuccessListener(requireActivity()) { result ->
                 try {
                     val intentSenderRequest = IntentSenderRequest.Builder(result.pendingIntent).build()
@@ -241,10 +190,11 @@ class LoginFragment : Fragment() {
 
     private val googleIntentResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            if (result != null) {
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
                 val data = result.data
                 try {
-                    val credential = oneTapClient.getSignInCredentialFromIntent(data)
+                    val credential = Identity.getSignInClient(requireActivity())
+                        .getSignInCredentialFromIntent(data)
                     val idToken = credential.googleIdToken
                     val password = credential.password
 
@@ -324,7 +274,6 @@ class LoginFragment : Fragment() {
             userViewModel.users.observe(viewLifecycleOwner) {response ->
                 when(response){
                     is ApiState.Success ->{
-                        progressDialog.dismiss()
                        val userExist = response.data.any {
                             it.uuid == key
                         }
