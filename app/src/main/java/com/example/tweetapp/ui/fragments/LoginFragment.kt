@@ -229,6 +229,8 @@ class LoginFragment : Fragment() {
 
                                     } else {
                                         // If sign in fails, display a message to the user.
+                                        progressDialog.dismiss()
+                                        Toast.makeText(requireContext(),"signInWithCredential:failure ${task.exception}",Toast.LENGTH_SHORT).show()
                                         Log.w(TAG, "signInWithCredential:failure", task.exception)
                                     }
                                 }
