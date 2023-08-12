@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
@@ -14,6 +15,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
@@ -33,6 +35,7 @@ import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.model.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
+import com.example.tweetapp.utils.Constants
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -52,6 +55,7 @@ class MainFragment : Fragment(){
     private val userViewModel : UserViewModel by activityViewModels()
     private var adapter : PostAdapter ?= null
     private lateinit var auth : FirebaseAuth
+    private var connection = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,14 +74,20 @@ class MainFragment : Fragment(){
     private fun initView() {
        lifecycleScope.launch {
            viewModel.getNotesByUserId(auth.uid.toString()).collectLatest{posts ->
-               if (posts.isNotEmpty()){
+               posts.let {
                    binding.progressCircular.visibility = View.GONE
+                   adapter?.differ?.submitList(posts.sortedByDescending { it.timestamp})
+                   val key = booleanPreferencesKey(auth.uid.toString())
+                   SettingPref(requireContext(),key).setUserFirstTime(false)
                }
-               adapter?.differ?.submitList(posts.sortedByDescending { it.timestamp})
-               val key = booleanPreferencesKey(auth.uid.toString())
-               SettingPref(requireContext(),key).setUserFirstTime(false)
            }
        }
+
+        val key = booleanPreferencesKey(Constants.NETWORK_STATE)
+        SettingPref(requireContext(),key).getNetworkState.asLiveData()
+            .observe(viewLifecycleOwner) {
+                connection = it
+            }
 
         binding.fabAdd.setOnClickListener {
             val action = Action.CREATE
@@ -106,11 +116,16 @@ class MainFragment : Fragment(){
         val dialog = MaterialAlertDialogBuilder(requireContext())
         dialog.setTitle("Do you want to logout?")
         dialog.setPositiveButton("Yes"){_, _ ->
-            auth.signOut()
-            if (auth.currentUser==null){
-                userViewModel.setLogin(false)
-                findNavController().navigate(R.id.action_mainFragment_to_loginFragment)
+            if (connection){
+                auth.signOut()
+                if (auth.currentUser==null){
+                    userViewModel.setLogin(false)
+                    findNavController().navigate(R.id.action_mainFragment_to_loginFragment)
+                }
+            }else{
+                Toast.makeText(requireContext(),"No connection",Toast.LENGTH_SHORT).show()
             }
+
         }
         dialog.setNegativeButton("No"){_, _ ->
 

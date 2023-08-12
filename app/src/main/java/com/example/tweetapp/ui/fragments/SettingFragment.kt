@@ -1,19 +1,22 @@
 package com.example.tweetapp.ui.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentSettingBinding
+import com.example.tweetapp.datastore.SettingPref
 import com.example.tweetapp.model.ApiState
+import com.example.tweetapp.utils.Constants
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
@@ -25,6 +28,7 @@ class SettingFragment : Fragment() {
     }
     private lateinit var auth : FirebaseAuth
     private val userViewModel : UserViewModel by activityViewModels()
+    private var connection = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,10 +43,14 @@ class SettingFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
         binding.logout.setOnClickListener{
-            auth.signOut()
-            if (auth.currentUser == null){
-                userViewModel.setLogin(false)
-                findNavController().navigate(R.id.action_settingFragment_to_loginFragment)
+            if (connection){
+                auth.signOut()
+                if (auth.currentUser == null){
+                    userViewModel.setLogin(false)
+                    findNavController().navigate(R.id.action_settingFragment_to_loginFragment)
+                }
+            }else{
+                Toast.makeText(requireContext(),"No connection",Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -52,6 +60,12 @@ class SettingFragment : Fragment() {
 
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
+        }
+
+        val key = booleanPreferencesKey(Constants.NETWORK_STATE)
+        SettingPref(requireContext(),key).getNetworkState.asLiveData()
+            .observe(viewLifecycleOwner) {
+            connection = it
         }
 
         userViewModel.userData.observe(viewLifecycleOwner){response ->

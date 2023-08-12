@@ -36,13 +36,6 @@ class PostViewModel @Inject constructor(
     private val _selectedPost = MutableLiveData<PostType>()
     val selectedPost : LiveData<PostType>  = _selectedPost
 
-    private val _isOnline = MutableStateFlow(false)
-    val isOnline : StateFlow<Boolean> = _isOnline.asStateFlow()
-
-    fun setOnline(enabled : Boolean){
-        _isOnline.value = enabled
-    }
-
     fun setSelectedPost(post: PostType){
         _selectedPost.value = post
     }
