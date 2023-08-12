@@ -34,6 +34,13 @@ class UserViewModel @Inject constructor(
     private val _login = MutableLiveData(false)
     val login : LiveData<Boolean> = _login
 
+    private val _workState = MutableLiveData<Boolean>(null)
+    val workState : LiveData<Boolean> = _workState
+
+    fun setWorkState(state : Boolean){
+        _workState.value = state
+    }
+
     val protoData = protoRepository.userPreferenceFLow.asLiveData()
 
     fun updateUserPrefDataStore(isFirstTime : Boolean, userId : String) =

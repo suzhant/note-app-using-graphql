@@ -72,16 +72,17 @@ class MainFragment : Fragment(){
     }
 
     private fun initView() {
-       lifecycleScope.launch {
-           viewModel.getNotesByUserId(auth.uid.toString()).collectLatest{posts ->
-               posts.let {
-                   binding.progressCircular.visibility = View.GONE
-                   adapter?.differ?.submitList(posts.sortedByDescending { it.timestamp})
-                   val key = booleanPreferencesKey(auth.uid.toString())
-                   SettingPref(requireContext(),key).setUserFirstTime(false)
-               }
-           }
-       }
+        userViewModel.workState.observe(viewLifecycleOwner){workState ->
+            workState?.let {
+                if (workState){
+                      fetchNotes()
+                }else{
+                    if (!connection){
+                        fetchNotes()
+                    }
+                }
+            }
+        }
 
         val key = booleanPreferencesKey(Constants.NETWORK_STATE)
         SettingPref(requireContext(),key).getNetworkState.asLiveData()
@@ -131,6 +132,19 @@ class MainFragment : Fragment(){
 
         }
         dialog.show()
+    }
+
+    private fun fetchNotes(){
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getNotesByUserId(auth.uid.toString()).collectLatest{posts ->
+                posts.let {
+                    binding.progressCircular.visibility = View.GONE
+                    adapter?.differ?.submitList(posts.sortedByDescending { it.timestamp})
+                    val key = booleanPreferencesKey(auth.uid.toString())
+                    SettingPref(requireContext(),key).setUserFirstTime(false)
+                }
+            }
+        }
     }
 
     private fun initRecycler() {

@@ -14,6 +14,7 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.databinding.ActivityMainBinding
@@ -69,6 +70,7 @@ class MainActivity : AppCompatActivity() {
                 5000L,
                 TimeUnit.MILLISECONDS
             )
+            .addTag("syncWork")
             .setInputData(inputData = workDataOf(RemoteSyncWorker.ACTION to "SYNC"))
             .setConstraints(constraints)
             .build()
@@ -77,6 +79,7 @@ class MainActivity : AppCompatActivity() {
             BackoffPolicy.LINEAR,
             5000L,
             TimeUnit.MILLISECONDS)
+            .addTag("syncWork")
             .setConstraints(constraints)
             .build()
 
@@ -91,6 +94,12 @@ class MainActivity : AppCompatActivity() {
             .beginWith(firstTask)
             .then(secondTask).enqueue()
 
+        WorkManager.getInstance(applicationContext)
+            .getWorkInfosByTagLiveData("syncWork").observe(this){workInfos ->
+                val success = workInfos.all { it.state == WorkInfo.State.SUCCEEDED }
+                userViewModel.setWorkState(success)
+                Log.d("workState","$success")
+            }
     }
 
     private fun initReceiver() {
