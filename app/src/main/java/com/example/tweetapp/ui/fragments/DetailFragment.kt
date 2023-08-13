@@ -63,16 +63,16 @@ class DetailFragment : Fragment() {
             scrimColor = Color.TRANSPARENT
         }
 
-        sharedElementReturnTransition = MaterialContainerTransform().apply {
-            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
-            duration = resources.getInteger(R.integer.motion_large).toLong()
-            shapeMaskProgressThresholds = MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
-            scaleProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
-            fadeProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.1f,1.0f)
-            containerColor  = ContextCompat.getColor(requireContext(),R.color.white)
-            setAllContainerColors(containerColor)
-            scrimColor = Color.TRANSPARENT
-        }
+//        sharedElementReturnTransition = MaterialContainerTransform().apply {
+//            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
+//            duration = resources.getInteger(R.integer.motion_large).toLong()
+//            shapeMaskProgressThresholds = MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
+//            scaleProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.5f,1.0f)
+//            fadeProgressThresholds =  MaterialContainerTransform.ProgressThresholds(0.1f,1.0f)
+//            containerColor  = ContextCompat.getColor(requireContext(),R.color.white)
+//            setAllContainerColors(containerColor)
+//            scrimColor = Color.TRANSPARENT
+//        }
     }
 
     override fun onCreateView(

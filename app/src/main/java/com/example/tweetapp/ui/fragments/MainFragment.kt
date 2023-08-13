@@ -169,7 +169,13 @@ class MainFragment : Fragment(){
             )
             val action = MainFragmentDirections.actionMainFragmentToDetailFragment(p)
             val extras = FragmentNavigatorExtras(view to post.id)
-            findNavController().navigate(action,extras)
+            with(findNavController()){
+                currentDestination?.getAction(R.id.action_mainFragment_to_detailFragment)?.
+                let {
+                        navigate(action,extras)
+                }
+            }
+
         })
         binding.recyclerPost.adapter = adapter
 

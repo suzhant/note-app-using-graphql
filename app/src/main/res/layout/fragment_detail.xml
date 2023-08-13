@@ -101,6 +101,7 @@
                 android:autofillHints="name"
                 android:background="@drawable/edittext_no_underline"
                 android:gravity="top"
+                android:lineSpacingExtra="5dp"
                 android:hint="Body"
                 android:inputType="textMultiLine"
                 android:padding="10dp"
