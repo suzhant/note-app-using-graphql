@@ -33,7 +33,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/postTitleTextView"
+                    android:id="@+id/txt_post_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
@@ -43,7 +43,7 @@
                     tools:text="Title" />
 
                 <TextView
-                    android:id="@+id/postBodyTextView"
+                    android:id="@+id/txt_post_body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="3dp"
@@ -51,6 +51,16 @@
                     android:ellipsize="end"
                     android:textAppearance="@style/TextAppearance.AppCompat.Small"
                     tools:text="hello" />
+
+                <TextView
+                    android:id="@+id/txt_post_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textSize="11sp"
+                    tools:text="6 August, 2023" />
 
             </LinearLayout>
 

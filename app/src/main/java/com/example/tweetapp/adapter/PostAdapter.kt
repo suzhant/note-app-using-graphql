@@ -1,14 +1,17 @@
 package com.example.tweetapp.adapter
 
 import android.content.Context
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tweetapp.databinding.PostItemLayoutBinding
 import com.example.tweetapp.model.Post
+import com.example.tweetapp.utils.DateTimeUtil
 
 class PostAdapter(
     private val onPopUpMenuClicked: (Post, Context, View) -> Unit,
@@ -25,11 +28,13 @@ class PostAdapter(
         return PostViewHolder(itemView)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = differ.currentList[position]
         with(holder.binding){
-            postTitleTextView.text = post.title
-            postBodyTextView.text = post.body
+            txtPostTitle.text = post.title
+            txtPostBody.text = post.body
+            txtPostTime.text = DateTimeUtil.convertMillisToDate(post.timestamp)
             menu.setOnClickListener {
                 onPopUpMenuClicked(
                     post,

@@ -11,9 +11,6 @@
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
         <action
-            android:id="@+id/action_mainFragment_to_formFragment"
-            app:destination="@id/formFragment" />
-        <action
             android:id="@+id/action_mainFragment_to_detailFragment"
             app:destination="@id/detailFragment" />
         <action
@@ -26,15 +23,6 @@
         <action
             android:id="@+id/action_mainFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/formFragment"
-        android:name="com.example.tweetapp.ui.fragments.FormFragment"
-        android:label="fragment_form"
-        tools:layout="@layout/fragment_form" >
-        <action
-            android:id="@+id/action_formFragment_to_mainFragment"
-            app:destination="@id/mainFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailFragment"

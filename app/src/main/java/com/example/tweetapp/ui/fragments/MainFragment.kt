@@ -43,6 +43,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.Date
 import java.util.concurrent.TimeUnit
 
 
@@ -92,7 +93,7 @@ class MainFragment : Fragment(){
 
         binding.fabAdd.setOnClickListener {
             val action = Action.CREATE
-            val post = Post("","","", timestamp = 0L, uuid = "")
+            val post = Post("","","", timestamp = Date().time, uuid = "")
             val postType = PostType(action,post)
             viewModel.setSelectedPost(postType)
             val arg = MainFragmentDirections.actionMainFragmentToDetailFragment(post)
@@ -187,12 +188,6 @@ class MainFragment : Fragment(){
             PopupMenu.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem?): Boolean {
                 return when (item?.itemId) {
-                    R.id.update -> {
-                        val action = Action.EDIT
-                        val postType = PostType(action,post)
-                        navigateToForm(postType)
-                        true
-                    }
                     R.id.delete -> {
                         showDialog(post)
                         true
@@ -227,11 +222,6 @@ class MainFragment : Fragment(){
             }
         }
 
-    }
-
-    private fun navigateToForm(post: PostType) {
-        viewModel.setSelectedPost(post = post)
-        findNavController().navigate(R.id.action_mainFragment_to_formFragment)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

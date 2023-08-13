@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -30,6 +31,7 @@ import com.example.tweetapp.databinding.FragmentDetailBinding
 import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.service.RemoteSyncWorker
+import com.example.tweetapp.utils.DateTimeUtil
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -85,6 +87,7 @@ class DetailFragment : Fragment() {
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
@@ -98,10 +101,12 @@ class DetailFragment : Fragment() {
         }
 
         textWatcher = object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            override fun beforeTextChanged(s: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val textLength = s?.length ?: 0
+                binding.postLength.text = "$textLength characters"
                 isUpdated = false
                 showMenuItems()
             }
@@ -110,8 +115,6 @@ class DetailFragment : Fragment() {
 
             }
         }
-        binding.postTitleTextView.addTextChangedListener(textWatcher)
-        binding.postBodyTextView.addTextChangedListener(textWatcher)
 
         binding.toolbar.menu.findItem(R.id.done).setOnMenuItemClickListener {
             updatePost()
@@ -149,15 +152,44 @@ class DetailFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun initView() {
-        binding.postTitleTextView.setText(detailArgs?.post?.title )
-        binding.postBodyTextView.setText(detailArgs?.post?.body)
+
+        setEnterSharedElementCallback(object : androidx.core.app.SharedElementCallback() {
+            @RequiresApi(Build.VERSION_CODES.O)
+            override fun onSharedElementEnd(
+                sharedElementNames: MutableList<String>?,
+                sharedElements: MutableList<View>?,
+                sharedElementSnapshots: MutableList<View>?
+            ) {
+                binding.etPostTitle.setText(detailArgs?.post?.title)
+                binding.postTime.text = detailArgs?.post?.timestamp?.let {
+                    DateTimeUtil.convertMillisToDate(
+                        it
+                    )
+                }
+                binding.etPostBody.apply {
+                    setText(detailArgs?.post?.body)
+                    visibility = View.VISIBLE
+                    alpha = 0f
+                    ViewCompat.animate(this)
+                        .alpha(1f)
+                        .setDuration(200)
+                        .setStartDelay(200)
+                        .start()
+                }
+                val textLength = binding.etPostBody.text.length
+                binding.postLength.text = "$textLength characters"
+                binding.etPostTitle.addTextChangedListener(textWatcher)
+                binding.etPostBody.addTextChangedListener(textWatcher)
+            }
+        })
         hideMenuItems()
     }
 
     private fun updatePost(){
-        val title = binding.postTitleTextView.text.toString()
-        val body = binding.postBodyTextView.text.toString()
+        val title = binding.etPostTitle.text.toString()
+        val body = binding.etPostBody.text.toString()
         val time = Date().time
         if (postId.isEmpty()){
             val uuid = UUID.randomUUID().toString()
@@ -223,5 +255,11 @@ class DetailFragment : Fragment() {
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
                 syncDataRequest
             )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding.etPostBody.removeTextChangedListener(textWatcher)
+        binding.etPostTitle.removeTextChangedListener(textWatcher)
     }
 }
