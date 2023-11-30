@@ -51,7 +51,7 @@ android {
     }
 
     lintOptions {
-        lintConfig = file("$resources/xml/lint_rules.xml")
+        lintConfig = file("$rootDir/lint_rules.xml")
     }
 }
 
