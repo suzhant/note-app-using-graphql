@@ -251,7 +251,7 @@ class DetailFragment : Fragment() {
 
         WorkManager.getInstance(requireContext())
             .enqueueUniqueWork(
-                syncDataRequest.stringId,
+                syncDataRequest.id.toString(),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
                 syncDataRequest
             )
