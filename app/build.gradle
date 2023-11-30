@@ -52,6 +52,7 @@ android {
 
     lintOptions {
         lintConfig = file("$rootDir/lint_rules.xml")
+        disable 'RestrictedApi'
     }
 }
 

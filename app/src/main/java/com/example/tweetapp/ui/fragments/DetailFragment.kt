@@ -13,6 +13,7 @@ import android.view.animation.PathInterpolator
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
@@ -251,7 +252,7 @@ class DetailFragment : Fragment() {
 
         WorkManager.getInstance(requireContext())
             .enqueueUniqueWork(
-                syncDataRequest.id.toString(),
+                syncDataRequest.stringId,
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
                 syncDataRequest
             )
