@@ -1,0 +1,22 @@
+# This is a basic workflow to help you get started with Actions
+
+name: On Pull Request Opened
+
+on:
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  lint:
+    name: Lint debug variant
+    uses: ./.github/workflows/job_lint_debug.yml
+
+  test:
+    name: Test debug variant
+    needs: lint
+    uses: ./.github/workflows/job_test_debug.yml
+
+
+
+
+
