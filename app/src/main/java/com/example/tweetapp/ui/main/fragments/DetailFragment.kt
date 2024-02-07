@@ -1,4 +1,4 @@
-package com.example.tweetapp.ui.fragments
+package com.example.tweetapp.ui.main.fragments
 
 import android.content.Context
 import android.graphics.Color
@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,11 +14,10 @@ import android.view.animation.PathInterpolator
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
-import androidx.annotation.RestrictTo
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.work.BackoffPolicy
@@ -31,6 +31,7 @@ import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentDetailBinding
 import com.example.tweetapp.model.Action
 import com.example.tweetapp.model.Post
+import com.example.tweetapp.service.AlarmReceiver
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.utils.DateTimeUtil
 import com.example.tweetapp.viewmodel.PostViewModel
@@ -38,6 +39,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -63,7 +66,6 @@ class DetailFragment : Fragment() {
             interpolator = PathInterpolator(0.05f,0.7f,0.1f,1f)
             scrimColor = Color.TRANSPARENT
         }
-
 //        sharedElementReturnTransition = MaterialContainerTransform().apply {
 //            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
 //            duration = resources.getInteger(R.integer.motion_large).toLong()
@@ -116,6 +118,8 @@ class DetailFragment : Fragment() {
 
             }
         }
+        binding.etPostTitle.addTextChangedListener(textWatcher)
+        binding.etPostBody.addTextChangedListener(textWatcher)
 
         binding.toolbar.menu.findItem(R.id.done).setOnMenuItemClickListener {
             updatePost()
@@ -156,35 +160,37 @@ class DetailFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun initView() {
 
-        setEnterSharedElementCallback(object : androidx.core.app.SharedElementCallback() {
-            @RequiresApi(Build.VERSION_CODES.O)
-            override fun onSharedElementEnd(
-                sharedElementNames: MutableList<String>?,
-                sharedElements: MutableList<View>?,
-                sharedElementSnapshots: MutableList<View>?
-            ) {
-                binding.etPostTitle.setText(detailArgs?.post?.title)
-                binding.postTime.text = detailArgs?.post?.timestamp?.let {
-                    DateTimeUtil.convertMillisToDate(
-                        it
-                    )
-                }
-                binding.etPostBody.apply {
-                    setText(detailArgs?.post?.body)
-                    visibility = View.VISIBLE
-                    alpha = 0f
-                    ViewCompat.animate(this)
-                        .alpha(1f)
-                        .setDuration(200)
-                        .setStartDelay(200)
-                        .start()
-                }
-                val textLength = binding.etPostBody.text.length
-                binding.postLength.text = "$textLength characters"
-                binding.etPostTitle.addTextChangedListener(textWatcher)
-                binding.etPostBody.addTextChangedListener(textWatcher)
+//        setEnterSharedElementCallback(object : androidx.core.app.SharedElementCallback() {
+//            @RequiresApi(Build.VERSION_CODES.O)
+//            override fun onSharedElementEnd(
+//                sharedElementNames: MutableList<String>?,
+//                sharedElements: MutableList<View>?,
+//                sharedElementSnapshots: MutableList<View>?
+//            ) {
+//            }
+//        })
+
+        binding.etPostTitle.setText(detailArgs?.post?.title)
+        binding.postTime.text =
+            detailArgs?.post?.timestamp?.let {
+                DateTimeUtil.convertMillisToDate(
+                    it
+                )
             }
-        })
+
+        binding.etPostBody.apply {
+            setText(detailArgs?.post?.body)
+            visibility = View.VISIBLE
+            alpha = 0f
+            ViewCompat.animate(this)
+                .alpha(1f)
+                .setDuration(200)
+                .setStartDelay(200)
+                .start()
+        }
+        val textLength = binding.etPostBody.text.length
+        binding.postLength.text = "$textLength characters"
+
         hideMenuItems()
     }
 

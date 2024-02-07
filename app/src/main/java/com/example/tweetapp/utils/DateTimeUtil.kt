@@ -2,6 +2,8 @@ package com.example.tweetapp.utils
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.tweetapp.model.DateFormat
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -28,6 +30,11 @@ object DateTimeUtil {
         val pattern = choosePattern(time)
         val formatter = DateTimeFormatter.ofPattern(pattern, Locale.US)
         return date.format(formatter)
+    }
+
+    fun convertMillisToTime(time: Long): String {
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return  sdf.format(Date(time))
     }
 
 }

@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/mainFragment">
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.example.tweetapp.ui.fragments.MainFragment"
+        android:name="com.example.tweetapp.ui.main.fragments.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
         <action
@@ -21,46 +21,53 @@
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right"/>
         <action
-            android:id="@+id/action_mainFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
+            android:id="@+id/action_mainFragment_to_calendarFragment"
+            app:destination="@id/calendarFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailFragment"
-        android:name="com.example.tweetapp.ui.fragments.DetailFragment"
+        android:name="com.example.tweetapp.ui.main.fragments.DetailFragment"
         android:label="fragment_detail"
-        tools:layout="@layout/fragment_detail" >
+        tools:layout="@layout/fragment_detail">
         <argument
             android:name="post"
-            app:argType="com.example.tweetapp.model.Post" />
-    </fragment>
-    <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.tweetapp.ui.fragments.LoginFragment"
-        android:label="fragment_login"
-        tools:layout="@layout/fragment_login" >
+            android:defaultValue="@null"
+            app:argType="com.example.tweetapp.model.Post"
+            app:nullable="true" />
+        <deepLink app:uri="tweetapp://notification/{post}" />
         <action
-            android:id="@+id/action_loginFragment_to_registerFragment"
-            app:destination="@id/registerFragment" />
-        <action
-            android:id="@+id/action_loginFragment_to_mainFragment"
-            app:destination="@id/mainFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"/>
+            android:id="@+id/action_detailFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/registerFragment"
-        android:name="com.example.tweetapp.ui.fragments.RegisterFragment"
-        android:label="fragment_register"
-        tools:layout="@layout/fragment_register" />
     <fragment
         android:id="@+id/settingFragment"
-        android:name="com.example.tweetapp.ui.fragments.SettingFragment"
+        android:name="com.example.tweetapp.ui.main.fragments.SettingFragment"
         android:label="fragment_setting"
-        tools:layout="@layout/fragment_setting" >
+        tools:layout="@layout/fragment_setting" />
+    <dialog
+        android:id="@+id/calendarFragment"
+        android:name="com.example.tweetapp.ui.calendar.dialog.CalendarFragment"
+        android:label="fragment_calendar"
+        tools:layout="@layout/fragment_calendar" >
         <action
-            android:id="@+id/action_settingFragment_to_loginFragment"
-            app:destination="@id/loginFragment" />
-    </fragment>
+            android:id="@+id/action_calendarFragment_to_timeFragment"
+            app:destination="@id/timeFragment" />
+        <argument
+            android:name="note"
+            app:argType="com.example.tweetapp.model.Post"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_calendarFragment_to_reminderFragment"
+            app:destination="@id/reminderFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/timeFragment"
+        android:name="com.example.tweetapp.ui.calendar.dialog.TimeFragment"
+        android:label="fragment_time"
+        tools:layout="@layout/fragment_time" />
+    <dialog
+        android:id="@+id/reminderFragment"
+        android:name="com.example.tweetapp.ui.calendar.dialog.ReminderFragment"
+        android:label="fragment_reminder"
+        tools:layout="@layout/fragment_reminder" />
 </navigation>

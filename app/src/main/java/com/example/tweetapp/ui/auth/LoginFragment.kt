@@ -1,8 +1,9 @@
-package com.example.tweetapp.ui.fragments
+package com.example.tweetapp.ui.auth
 
 import android.app.Activity
 import android.app.Dialog
 import android.app.PendingIntent
+import android.content.Intent
 import android.content.IntentSender
 import android.content.IntentSender.SendIntentException
 import android.os.Bundle
@@ -21,6 +22,7 @@ import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentLoginBinding
 import com.example.tweetapp.model.ApiState
 import com.example.tweetapp.model.User
+import com.example.tweetapp.ui.main.MainActivity
 import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
@@ -270,7 +272,6 @@ class LoginFragment : Fragment() {
                 }
             }
         }
-
     private fun checkIfKeyExists(key: String, userData: User) {
             userViewModel.getAllUsers()
             userViewModel.users.observe(viewLifecycleOwner) {response ->
@@ -320,9 +321,10 @@ class LoginFragment : Fragment() {
                 // Update was successful
                 loggedIn = true
                 userViewModel.setLogin(true)
-                if (progressDialog.isShowing){
-                    progressDialog.dismiss()
-                }
+//                lifecycleScope.launch {
+//                    dismissProgress()
+//                }
+                dismissProgress()
                 goToNextFragment()
             }
 
@@ -338,8 +340,15 @@ class LoginFragment : Fragment() {
 
     }
 
+    private fun dismissProgress(){
+        if (progressDialog.isShowing){
+            progressDialog.dismiss()
+        }
+    }
+
     private fun goToNextFragment(){
-        findNavController().navigate(R.id.action_loginFragment_to_mainFragment)
+        startActivity(Intent(requireContext(),MainActivity::class.java))
+     //   findNavController().navigate(R.id.action_loginFragment_to_mainFragment)
     }
 
     override fun onStart() {

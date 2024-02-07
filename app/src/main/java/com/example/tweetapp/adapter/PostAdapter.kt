@@ -15,7 +15,7 @@ import com.example.tweetapp.utils.DateTimeUtil
 
 class PostAdapter(
     private val onPopUpMenuClicked: (Post, Context, View) -> Unit,
-    private val onClick: (Post,View) -> Unit,
+    private val onClick: (Post,View) -> Unit
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private lateinit var context: Context

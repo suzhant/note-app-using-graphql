@@ -29,6 +29,8 @@ interface PostDao {
 
     @Query("SELECT * FROM notes where user_id = :uuid")
     suspend fun getAllNotes(uuid: String) : List<Post>
+    @Query("SELECT * FROM notes where id = :postId")
+    suspend fun getPostById(postId : String) : Post
 
     @Transaction
     suspend fun insertAllNotes(posts: List<Post>) {

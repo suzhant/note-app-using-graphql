@@ -1,5 +1,6 @@
-package com.example.tweetapp.ui.fragments
+package com.example.tweetapp.ui.main.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +17,7 @@ import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentSettingBinding
 import com.example.tweetapp.datastore.SettingPref
 import com.example.tweetapp.model.ApiState
+import com.example.tweetapp.ui.auth.LoginActivity
 import com.example.tweetapp.utils.Constants
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -47,7 +49,7 @@ class SettingFragment : Fragment() {
                 auth.signOut()
                 if (auth.currentUser == null){
                     userViewModel.setLogin(false)
-                    findNavController().navigate(R.id.action_settingFragment_to_loginFragment)
+                    startActivity(Intent(requireContext(),LoginActivity::class.java))
                 }
             }else{
                 Toast.makeText(requireContext(),"No connection",Toast.LENGTH_SHORT).show()
