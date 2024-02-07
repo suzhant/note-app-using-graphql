@@ -1,0 +1,8 @@
+query GetPostById($id: String!) {
+    note_by_pk(id: $id) {
+        body
+        id
+        title
+        timestamp
+    }
+}

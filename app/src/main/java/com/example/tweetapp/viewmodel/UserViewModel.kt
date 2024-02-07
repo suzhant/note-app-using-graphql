@@ -56,7 +56,7 @@ class UserViewModel @Inject constructor(
 
      fun getAllUsers() {
         viewModelScope.launch(Dispatchers.IO) {
-            _users.postValue(ApiState.Loading(true))
+            _users.postValue(ApiState.Loading)
             try {
                 val response = userRepository.getAllUsers()
                 if (!response.hasErrors()){
@@ -71,7 +71,7 @@ class UserViewModel @Inject constructor(
     }
 
     fun createUser(uuid : String,email : String, username : String , profilePic: String) = flow{
-        emit(ApiState.Loading(true))
+        emit(ApiState.Loading)
         try {
             val response = userRepository.createUser(uuid, email, username, profilePic).data
             if (response!=null){
@@ -92,7 +92,7 @@ class UserViewModel @Inject constructor(
     }
 
      fun updateUser(uuid : String,email : String, username : String , profilePic: String) = flow {
-        emit(ApiState.Loading(true))
+        emit(ApiState.Loading)
         try {
             val response = userRepository.updateUser(
                 uuid = uuid,

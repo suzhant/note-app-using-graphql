@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,7 +31,7 @@ class PostViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
 ) : ViewModel() {
 
-    private val _post = MutableStateFlow<ApiState<List<FetchNoteQuery.Note>>>(ApiState.Loading(true))
+    private val _post = MutableStateFlow<ApiState<List<FetchNoteQuery.Note>>>(ApiState.Loading)
     val post : StateFlow<ApiState<List<FetchNoteQuery.Note>>> = _post.asStateFlow()
 
     private val _selectedPost = MutableLiveData<PostType>()
@@ -43,7 +44,7 @@ class PostViewModel @Inject constructor(
     fun getPost(userId: String){
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                _post.value = (ApiState.Loading(true))
+                _post.value = (ApiState.Loading)
                 val response = remoteRepository.fetchPost(userId)
                 if (!response.hasErrors()){
                     _post.value = (ApiState.Success(response.data!!.note))
@@ -127,6 +128,12 @@ class PostViewModel @Inject constructor(
 
     fun getNotesByUserId(uuid :String) : Flow<List<Post>>{
         return roomRepository.getNotesByUserId(uuid)
+    }
+
+     suspend fun getNoteById(postId: String) : Post{
+       return withContext(Dispatchers.IO) {
+           roomRepository.getNoteById(postId)
+       }
     }
 
 }

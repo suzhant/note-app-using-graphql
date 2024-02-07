@@ -16,6 +16,8 @@ import com.example.tweetapp.repository.RemoteRepositoryImpl
 import com.example.tweetapp.repository.RoomRepository
 import com.example.tweetapp.repository.UserRepository
 import com.example.tweetapp.repository.UserRepositoryImpl
+import com.example.tweetapp.service.AlarmController
+import com.example.tweetapp.service.AlarmService
 import com.example.tweetapp.utils.Constants.DATA_STORE_FILE_NAME
 import dagger.Module
 import dagger.Provides
@@ -89,6 +91,12 @@ object AppModule {
     @Provides
     fun provideProtoRepository(protoDataStore: DataStore<UserPreferences>) : ProtoRepository{
         return ProtoRepository(protoDataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun providesAlarmService(@ApplicationContext context: Context) : AlarmController{
+        return AlarmService(context)
     }
 
 }

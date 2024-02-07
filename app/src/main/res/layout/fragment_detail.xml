@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:transitionName="shared_element_container"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.fragments.DetailFragment">
+    tools:context=".ui.main.fragments.DetailFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"

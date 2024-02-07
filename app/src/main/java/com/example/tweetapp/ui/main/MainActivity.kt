@@ -1,5 +1,6 @@
-package com.example.tweetapp.ui
+package com.example.tweetapp.ui.main
 import android.content.BroadcastReceiver
+import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.os.Build
@@ -8,8 +9,10 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
@@ -17,11 +20,14 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.tweetapp.R
 import com.example.tweetapp.databinding.ActivityMainBinding
 import com.example.tweetapp.datastore.SettingPref
+import com.example.tweetapp.service.AlarmReceiver
 import com.example.tweetapp.service.ConnectivityReceiver
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.service.RoomSyncWorker
+import com.example.tweetapp.ui.main.fragments.MainFragmentDirections
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,12 +54,8 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         initReceiver()
-        userViewModel.login.observe(this){isLoggedIn ->
-            lifecycleScope.launch {
-                if (isLoggedIn){
-                    scheduleDataSyncWorker()
-                }
-            }
+        lifecycleScope.launch {
+            scheduleDataSyncWorker()
         }
     }
 

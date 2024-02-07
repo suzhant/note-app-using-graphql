@@ -1,7 +1,6 @@
-package com.example.tweetapp.ui.fragments
+package com.example.tweetapp.ui.auth
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,16 +10,12 @@ import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentRegisterBinding
 import com.example.tweetapp.model.ApiState
-import com.example.tweetapp.model.User
 import com.example.tweetapp.utils.ProgressHelper
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 

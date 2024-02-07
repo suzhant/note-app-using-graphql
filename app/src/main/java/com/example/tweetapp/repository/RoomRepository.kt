@@ -18,4 +18,6 @@ class RoomRepository(private val postDao: PostDao) {
      fun getUserWithNotes() = postDao.getUserWithNotes()
 
      fun getNotesByUserId(uuid : String) = postDao.getNoteByUserId(uuid)
+
+     suspend fun getNoteById(postId : String) = postDao.getPostById(postId)
  }
