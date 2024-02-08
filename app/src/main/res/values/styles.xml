@@ -3,5 +3,4 @@
     <style name="ShapeAppearanceOverlay.ShapeableImageView.Corner.10dp" parent="">
         <item name="cornerSize">10dp</item>
     </style>
-
 </resources>

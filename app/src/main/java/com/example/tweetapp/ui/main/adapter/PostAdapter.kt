@@ -1,4 +1,4 @@
-package com.example.tweetapp.adapter
+package com.example.tweetapp.ui.main.adapter
 
 import android.content.Context
 import android.os.Build

@@ -30,6 +30,7 @@ class CalendarFragment : DialogFragment() {
     }
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val args: CalendarFragmentArgs? by navArgs()
+    private var date : Long ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,15 +59,23 @@ class CalendarFragment : DialogFragment() {
             dismiss()
         }
 
-        binding.btnDone.setOnClickListener {
-            val date = binding.calendarView.date
-            val time = sharedViewModel.time.value
+        binding.calendarView.setOnDateChangeListener { _, year, month, day ->
+            val cal = Calendar.getInstance()
+            cal.set(year,month,day)
+            date = cal.timeInMillis
+            Log.d("calendarDate","$year $month $day $date")
+        }
 
+        binding.btnDone.setOnClickListener {
+            val time = sharedViewModel.time.value
+            if (date == null){
+                date = binding.calendarView.date
+            }
             if (time != null) {
-                val combinedTimeInMillis = combine(date, time)
+                val combinedTimeInMillis = combine(date!!, time)
                 val post = sharedViewModel.currentPost.value
-                Log.d("calendarData", post.toString())
-                Log.d("calendarData", combinedTimeInMillis.toString())
+                Log.d("calendarDate", post.toString())
+                Log.d("calendarDate", combinedTimeInMillis.toString())
                 post?.let { note ->
                     val alarmItem = AlarmItem(
                         triggerTimeInMillis = combinedTimeInMillis,
@@ -87,7 +96,7 @@ class CalendarFragment : DialogFragment() {
         }
 
         binding.linearReminder.setOnClickListener {
-
+            findNavController().navigate(R.id.action_calendarFragment_to_reminderFragment)
         }
 
         binding.linearRepeat.setOnClickListener {
@@ -121,6 +130,10 @@ class CalendarFragment : DialogFragment() {
             set(Calendar.MINUTE, min)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
+            val now = Calendar.getInstance()
+            if (this.before(now)){
+                this.add(Calendar.DAY_OF_MONTH,1)
+            }
         }
 
         return cal.timeInMillis

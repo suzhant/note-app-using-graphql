@@ -5,10 +5,12 @@
         android:id="@+id/cancel"
         android:icon="@drawable/baseline_close_24"
         app:showAsAction="always"
-        android:title="Cancel" />
+        android:title="Cancel"
+        app:iconTint="@color/black"/>
     <item
         android:id="@+id/done"
         android:icon="@drawable/baseline_done_24"
         app:showAsAction="always"
-        android:title="Done" />
+        android:title="Done"
+        app:iconTint="@color/black"/>
 </menu>

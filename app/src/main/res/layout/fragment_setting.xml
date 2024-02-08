@@ -20,9 +20,10 @@
             android:layout_height="wrap_content"
             app:title="Note"
             app:navigationIcon="@drawable/baseline_arrow_back_24"
+            app:navigationIconTint="@color/black"
             app:titleCentered="true"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
-            app:titleTextColor="@color/design_default_color_primary" />
+            app:titleTextColor="@color/primary_text" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <com.google.android.material.imageview.ShapeableImageView

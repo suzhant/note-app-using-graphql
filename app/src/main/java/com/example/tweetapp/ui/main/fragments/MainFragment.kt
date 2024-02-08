@@ -36,7 +36,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.R
-import com.example.tweetapp.adapter.PostAdapter
+import com.example.tweetapp.ui.main.adapter.PostAdapter
 import com.example.tweetapp.databinding.FragmentMainBinding
 import com.example.tweetapp.datastore.SettingPref
 import com.example.tweetapp.model.Action

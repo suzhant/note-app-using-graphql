@@ -22,7 +22,7 @@
             app:menu="@menu/main_menu"
             app:titleCentered="true"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
-            app:titleTextColor="@color/design_default_color_primary" />
+            app:titleTextColor="@color/primary_text" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -42,20 +42,20 @@
         android:layout_marginEnd="28dp"
         android:transitionName="shared_element_container"
         android:layout_marginBottom="48dp"
-        android:backgroundTint="@color/design_default_color_primary"
+        android:backgroundTint="@color/primary_bg"
         android:src="@drawable/baseline_add_24"
         app:fabSize="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full"
-        app:tint="@color/white" />
+        app:tint="#FFFFFFFF" />
 
     <ProgressBar
         android:id="@+id/progress_circular"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible"
-        android:indeterminateTint="@color/design_default_color_primary_variant"
+        android:indeterminateTint="@color/primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
