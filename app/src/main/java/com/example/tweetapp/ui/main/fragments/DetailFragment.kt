@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +16,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.work.BackoffPolicy
@@ -29,9 +27,8 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.R
 import com.example.tweetapp.databinding.FragmentDetailBinding
-import com.example.tweetapp.model.Action
+import com.example.tweetapp.model.enums.Action
 import com.example.tweetapp.model.Post
-import com.example.tweetapp.service.AlarmReceiver
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.utils.DateTimeUtil
 import com.example.tweetapp.viewmodel.PostViewModel
@@ -39,8 +36,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
 import java.util.concurrent.TimeUnit

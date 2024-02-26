@@ -2,7 +2,7 @@ package com.example.tweetapp.utils
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.example.tweetapp.adapter.PostAdapter
+import com.example.tweetapp.ui.main.adapter.PostAdapter
 import java.util.Collections
 
 

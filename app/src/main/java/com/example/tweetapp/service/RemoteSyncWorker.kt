@@ -6,7 +6,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.apollographql.apollo3.api.Optional
-import com.example.tweetapp.model.Action
+import com.example.tweetapp.model.enums.Action
 import com.example.tweetapp.repository.RemoteRepository
 import com.example.tweetapp.repository.RoomRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -15,8 +15,6 @@ import com.hasura.type.Note_pk_columns_input
 import com.hasura.type.Note_set_input
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.takeWhile
 import java.util.Date
 
 @HiltWorker

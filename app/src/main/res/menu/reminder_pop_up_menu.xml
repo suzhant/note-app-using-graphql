@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/same_date"
+        android:icon="@drawable/baseline_arrow_drop_down_24"
+        android:title="Same with due date"/>
+
+    <item
+        android:id="@+id/five_min"
+        android:icon="@drawable/baseline_arrow_drop_down_24"
+        android:title="5 minutes before"/>
+
+    <item
+        android:id="@+id/ten_min"
+        android:title="10 minutes before"/>
+
+    <item
+        android:id="@+id/fifteen_min"
+        android:title="15 minutes before"/>
+
+    <item
+        android:id="@+id/one_day"
+        android:title="1 day before"/>
+
+    <item
+        android:id="@+id/two_day"
+        android:title="2 day before"/>
+
+    <item
+        android:id="@+id/set_reminder_time"
+        android:title="Set Reminder Time"/>
+</menu>

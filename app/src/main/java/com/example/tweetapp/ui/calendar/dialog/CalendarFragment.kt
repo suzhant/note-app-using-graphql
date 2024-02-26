@@ -11,6 +11,7 @@ import android.view.Window
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.asLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.tweetapp.R
@@ -30,6 +31,7 @@ class CalendarFragment : DialogFragment() {
     }
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private val args: CalendarFragmentArgs? by navArgs()
+    private var date : Long ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,22 +56,32 @@ class CalendarFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        sharedViewModel.resetList()
+
         binding.btnCancel.setOnClickListener {
             dismiss()
         }
 
-        binding.btnDone.setOnClickListener {
-            val date = binding.calendarView.date
-            val time = sharedViewModel.time.value
+        binding.calendarView.setOnDateChangeListener { _, year, month, day ->
+            val cal = Calendar.getInstance()
+            cal.set(year,month,day)
+            date = cal.timeInMillis
+            Log.d("calendarDate","$year $month $day $date")
+        }
 
+        binding.btnDone.setOnClickListener {
+            val time = sharedViewModel.time.value
+            if (date == null){
+                date = binding.calendarView.date
+            }
             if (time != null) {
-                val combinedTimeInMillis = combine(date, time)
+                val combinedTimeInMillis = combine(date!!, time)
                 val post = sharedViewModel.currentPost.value
-                Log.d("calendarData", post.toString())
-                Log.d("calendarData", combinedTimeInMillis.toString())
+                Log.d("calendarDate", post.toString())
+                Log.d("calendarDate", combinedTimeInMillis.toString())
                 post?.let { note ->
                     val alarmItem = AlarmItem(
-                        triggerTimeInMillis = combinedTimeInMillis,
+                        triggerTimeInMillis = combinedTimeInMillis!!,
                         message = note.body,
                         title = note.title,
                         postId = note.id,
@@ -87,7 +99,7 @@ class CalendarFragment : DialogFragment() {
         }
 
         binding.linearReminder.setOnClickListener {
-
+            findNavController().navigate(R.id.action_calendarFragment_to_reminderFragment)
         }
 
         binding.linearRepeat.setOnClickListener {
@@ -101,6 +113,20 @@ class CalendarFragment : DialogFragment() {
                 binding.tvTime.text = "No"
             }
         }
+
+//        sharedViewModel.reminderDate.asLiveData().observe(viewLifecycleOwner){items ->
+//            items?.let {
+//                Log.d("calendarData",items.toString())
+//                if (items.isNotEmpty()){
+//                    val time = items.joinToString(", "){
+//                        val date = DateTimeUtil.convertMillisToTime(it.reminderDates.getTimeStamp(combinedTimeInMillis!!))
+//                        date
+//                    }
+//                    binding.tvReminder.text = time
+//                }
+//
+//            }
+//        }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
@@ -121,6 +147,10 @@ class CalendarFragment : DialogFragment() {
             set(Calendar.MINUTE, min)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
+            val now = Calendar.getInstance()
+            if (this.before(now)){
+                this.add(Calendar.DAY_OF_MONTH,1)
+            }
         }
 
         return cal.timeInMillis

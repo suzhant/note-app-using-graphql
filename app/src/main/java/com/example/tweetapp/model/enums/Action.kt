@@ -1,4 +1,4 @@
-package com.example.tweetapp.model
+package com.example.tweetapp.model.enums
 
 enum class Action {
     CREATE,

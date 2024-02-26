@@ -6,7 +6,7 @@
     android:animateLayoutChanges="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Medium"
-    app:cardBackgroundColor="?attr/colorOnPrimary"
+    app:cardBackgroundColor="@color/white"
     tools:context=".ui.calendar.dialog.TimeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout

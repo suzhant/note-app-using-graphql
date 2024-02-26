@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.tweetapp.model.ApiState
 import com.example.tweetapp.model.Post
-import com.example.tweetapp.model.PostType
+import com.example.tweetapp.model.enums.PostType
 import com.example.tweetapp.model.UserWithNotes
 import com.example.tweetapp.repository.RemoteRepository
 import com.example.tweetapp.repository.RoomRepository

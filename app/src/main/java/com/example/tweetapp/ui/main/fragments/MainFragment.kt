@@ -15,15 +15,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.core.view.doOnPreDraw
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDeepLinkBuilder
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -36,17 +33,17 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tweetapp.R
-import com.example.tweetapp.adapter.PostAdapter
+import com.example.tweetapp.ui.main.adapter.PostAdapter
 import com.example.tweetapp.databinding.FragmentMainBinding
 import com.example.tweetapp.datastore.SettingPref
-import com.example.tweetapp.model.Action
+import com.example.tweetapp.model.enums.Action
 import com.example.tweetapp.model.Post
-import com.example.tweetapp.model.PostType
-import com.example.tweetapp.service.AlarmReceiver
+import com.example.tweetapp.model.enums.PostType
 import com.example.tweetapp.service.RemoteSyncWorker
 import com.example.tweetapp.ui.auth.LoginActivity
 import com.example.tweetapp.utils.Constants
 import com.example.tweetapp.utils.ItemTouchHelperCallback
+import com.example.tweetapp.utils.navigateSafe
 import com.example.tweetapp.viewmodel.PostViewModel
 import com.example.tweetapp.viewmodel.UserViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -208,7 +205,7 @@ class MainFragment : Fragment() {
 
                     R.id.schedule -> {
                         val arg = MainFragmentDirections.actionMainFragmentToCalendarFragment(note = post)
-                        findNavController().navigate(arg)
+                        navigateSafe(arg)
                         true
                     }
 
