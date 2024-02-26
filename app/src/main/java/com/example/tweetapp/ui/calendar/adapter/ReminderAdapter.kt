@@ -29,7 +29,7 @@ class ReminderAdapter(val onChecked : (ReminderItem) -> Unit) : RecyclerView.Ada
     override fun onBindViewHolder(holder: ReminderViewHolder, position: Int) {
         val item = differ.currentList[position]
         with(holder.binding){
-            textView.text = item.name
+            textView.text = item.reminderDates.toString()
             checkBox.isChecked = item.checked
 
             checkBox.setOnClickListener {

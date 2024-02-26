@@ -11,6 +11,7 @@ import android.view.Window
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.asLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.tweetapp.R
@@ -55,6 +56,8 @@ class CalendarFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        sharedViewModel.resetList()
+
         binding.btnCancel.setOnClickListener {
             dismiss()
         }
@@ -78,7 +81,7 @@ class CalendarFragment : DialogFragment() {
                 Log.d("calendarDate", combinedTimeInMillis.toString())
                 post?.let { note ->
                     val alarmItem = AlarmItem(
-                        triggerTimeInMillis = combinedTimeInMillis,
+                        triggerTimeInMillis = combinedTimeInMillis!!,
                         message = note.body,
                         title = note.title,
                         postId = note.id,
@@ -110,6 +113,20 @@ class CalendarFragment : DialogFragment() {
                 binding.tvTime.text = "No"
             }
         }
+
+//        sharedViewModel.reminderDate.asLiveData().observe(viewLifecycleOwner){items ->
+//            items?.let {
+//                Log.d("calendarData",items.toString())
+//                if (items.isNotEmpty()){
+//                    val time = items.joinToString(", "){
+//                        val date = DateTimeUtil.convertMillisToTime(it.reminderDates.getTimeStamp(combinedTimeInMillis!!))
+//                        date
+//                    }
+//                    binding.tvReminder.text = time
+//                }
+//
+//            }
+//        }
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {

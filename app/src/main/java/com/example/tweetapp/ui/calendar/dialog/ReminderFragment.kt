@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tweetapp.databinding.FragmentReminderBinding
 import com.example.tweetapp.databinding.WidgetPopupReminderBinding
+import com.example.tweetapp.model.ReminderItem
 import com.example.tweetapp.ui.calendar.SharedViewModel
 import com.example.tweetapp.ui.calendar.adapter.ReminderAdapter
 import com.example.tweetapp.utils.setSize
@@ -52,12 +53,14 @@ class ReminderFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnReminderAt.setOnClickListener {
-            popupWindow.showAsDropDown(it)
+            popupWindow.showAsDropDown(binding.divider)
         }
 
         binding.switchReminder.apply {
-            isChecked = true
-            sharedViewModel.setFirstItemChecked()
+            if (!isChecked) {
+                isChecked = true
+                sharedViewModel.setFirstItemChecked()
+            }
         }
 
         binding.switchReminder.setOnCheckedChangeListener { compoundButton, b ->
@@ -71,9 +74,10 @@ class ReminderFragment : DialogFragment() {
             state.let {
                 reminderAdapter?.differ?.submitList(state.items)
                 binding.btnReminderAt.text =
-                    state.checkedItems.joinToString(", ") { it.name }.ifEmpty {
-                        "No"
-                    }
+                    state.checkedItems.filter { it.checked }.joinToString(", ") { it.reminderDates.toString() }
+                        .ifEmpty {
+                            "No"
+                        }
             }
         }
 

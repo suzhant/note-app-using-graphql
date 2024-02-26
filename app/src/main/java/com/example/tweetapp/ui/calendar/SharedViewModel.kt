@@ -5,15 +5,18 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.example.tweetapp.model.AlarmItem
 import com.example.tweetapp.model.Post
 import com.example.tweetapp.model.ReminderItem
+import com.example.tweetapp.model.enums.ReminderDates
 import com.example.tweetapp.service.AlarmController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -31,14 +34,15 @@ class SharedViewModel @Inject constructor(
     private val alarmController: AlarmController
 ) : ViewModel() {
     private val reminders = listOf(
-        ReminderItem("1", "Same with due date"),
-        ReminderItem("2", "5 minutes before"),
-        ReminderItem("3", "10 minutes before"),
-        ReminderItem("4", "1 days before"),
-        ReminderItem("5", "2 days before"),
+        ReminderItem("1", reminderDates = ReminderDates.SAME_WITH_DUE_DATE),
+        ReminderItem("2", reminderDates = ReminderDates._5_MIN_BEFORE),
+        ReminderItem("3", reminderDates = ReminderDates._10_MIN_BEFORE),
+        ReminderItem("4", reminderDates = ReminderDates._1_DAY),
+        ReminderItem("5", reminderDates = ReminderDates._2_DAY),
     )
 
-    private val _reminderState = MutableStateFlow((ReminderUiState(items = reminders)))
+    private val _reminderState =
+        MutableStateFlow((ReminderUiState(items = reminders, checkedItems = reminders)))
     val reminderState = _reminderState.asStateFlow().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(2000), _reminderState.value
@@ -49,6 +53,15 @@ class SharedViewModel @Inject constructor(
 
     private val _currentPost = MutableLiveData<Post>(null)
     val currentPost: LiveData<Post> = _currentPost
+
+    private val _reminderDate = MutableStateFlow(reminders)
+    val reminderDate : StateFlow<List<ReminderItem>> = _reminderDate.asStateFlow()
+
+    init {
+        combine(_reminderDate,reminderState) { _, state ->
+            state.items.filter { it.checked }
+        }
+    }
 
 
     fun setCurrentPost(post: Post) {
@@ -67,11 +80,13 @@ class SharedViewModel @Inject constructor(
     fun setTime(time: Long?) {
         _time.value = time
     }
+
     fun updateItems(item: ReminderItem) {
         _reminderState.value.checkedItems.toMutableList().also { list ->
-            val index = list.indexOfFirst { it.id == item.id }
-            if (item.name == "Same with due date") {
-                _reminderState.value.items.toMutableList().also { items ->
+            _reminderState.value.items.toMutableList().also { items ->
+                val indexToAdd = items.indexOfFirst { it.id == item.id }
+                list[indexToAdd] = item
+                if (item.reminderDates.toString() == "Same with due date") {
                     items[0] = item
                     _reminderState.update {
                         it.copy(
@@ -80,12 +95,6 @@ class SharedViewModel @Inject constructor(
                     }
                 }
             }
-            if (item.checked){
-                list.add(item)
-            }else{
-                list.removeAt(index)
-            }
-
             _reminderState.update {
                 it.copy(
                     checkedItems = list
@@ -95,27 +104,55 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    fun resetList() {
+        val newList = _reminderState.value.items.map { item ->
+            item.copy(checked = false)
+        }
+        _reminderState.update {
+            it.copy(
+                items = newList,
+                checkedItems = newList
+            )
+        }
+    }
+
+    fun updateReminderItems() {
+        val checkedList = _reminderState.value.checkedItems
+        val newList = _reminderState.value.items.map { item1 ->
+            checkedList.find { it.id == item1.id }?.let {
+                item1.copy(checked = it.checked)
+            } ?: item1
+        }
+        _reminderState.update { currentState ->
+            currentState.copy(
+                items = newList
+            )
+        }
+    }
 
 
     fun setFirstItemChecked() {
         val checkedItems = _reminderState.value.checkedItems.filter { it.checked }
-        if (checkedItems.isNotEmpty()) return
+        if (checkedItems.isNotEmpty() && checkedItems[0].checked) return
 
-        _reminderState.update { currentState ->
-            val firstItem = currentState.items[0].copy(checked = true)
-            val newList = currentState.items.toMutableList().apply { set(0, firstItem) }
-
-            currentState.copy(
-                checkedItems = listOf(firstItem),
-                items = newList
-            )
+        _reminderState.value.items.toMutableList().also { list ->
+            val firstItem = list[0].copy(checked = true)
+            val newList = list.toMutableList().also { items ->
+                items[0] = firstItem
+            }
+            _reminderState.update { currentState ->
+                currentState.copy(
+                    checkedItems = newList,
+                    items = newList
+                )
+            }
         }
-
         Log.d("calendarData", "checked :${_reminderState.value.checkedItems}")
+        Log.d("calendarData", "reminderItem :${_reminderState.value.items}")
     }
 
     fun getCheckedReminders(): List<ReminderItem> {
-        return reminderState.value.checkedItems
+        return reminderState.value.checkedItems.filter { it.checked }
     }
 
     fun scheduleAlarm(alarmItem: AlarmItem) {
